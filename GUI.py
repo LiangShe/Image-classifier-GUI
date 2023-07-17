@@ -33,7 +33,6 @@ class ImageClassifier(wx.Frame):
         self.checkbox_size = (200, 50)
 
         self.panel = wx.Panel(self)
-        self.panel.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
         # Create a UI to display the image
         self.image = wx.StaticBitmap(self.panel, wx.ID_ANY)
@@ -45,7 +44,7 @@ class ImageClassifier(wx.Frame):
         open_button.Bind(wx.EVT_BUTTON, self.OnOpenImageSet)
 
         # Create a button to auto classify the image
-        classify_button = wx.Button(self.panel, wx.ID_OK, label="Audo classify")
+        classify_button = wx.Button(self.panel, wx.ID_OK, label="Auto classify")
         classify_button.SetFont(self.font)
         classify_button.Bind(wx.EVT_BUTTON, self.OnClassifyImage)
 
@@ -54,10 +53,29 @@ class ImageClassifier(wx.Frame):
         add_class_button.SetFont(self.font)
         add_class_button.Bind(wx.EVT_BUTTON, self.OnAddClass)
         
+        # Create two buttons to switch images
+        next_button = wx.Button(self.panel, wx.ID_ANY, label="Next")
+        next_button.SetFont(self.font)
+        next_button.Bind(wx.EVT_BUTTON, self.OnNextImage)
+        prev_button = wx.Button(self.panel, wx.ID_ANY, label="Previous")
+        prev_button.SetFont(self.font)
+        prev_button.Bind(wx.EVT_BUTTON, self.OnPreviousImage)
+
+        # add shortcuts
+        accel_tbl = wx.AcceleratorTable([(wx.ACCEL_NORMAL, ord('m'), next_button.GetId()),
+                                       (wx.ACCEL_NORMAL, ord('n'), prev_button.GetId())])
+        self.SetAcceleratorTable(accel_tbl)
+
         # Layout the controls
+        sizer_next_prev = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_next_prev.Add(prev_button, 0, wx.ALIGN_CENTER)
+        sizer_next_prev.Add(next_button, 0, wx.ALIGN_CENTER)
+
         self.sizer_right = wx.BoxSizer(wx.VERTICAL)
         self.sizer_right.Add(open_button, 0, wx.ALIGN_CENTER)
         self.sizer_right.Add(classify_button, 0, wx.ALIGN_CENTER)
+        self.sizer_right.Add(wx.StaticLine(self.panel, -1), 0, wx.EXPAND)
+        self.sizer_right.Add(sizer_next_prev, 0, wx.ALIGN_CENTER)
         self.sizer_right.Add(wx.StaticLine(self.panel, -1), 0, wx.EXPAND)
         self.sizer_right.Add(add_class_button, 0, wx.ALIGN_CENTER)
 
@@ -123,20 +141,23 @@ class ImageClassifier(wx.Frame):
         return image.Scale(w_new, h_new)
     
     def LoadImage(self):
-        
-        # load current image label
-        image_rel_path = self.image_names[self.current_image_index]
-        image_label = self.image_labels['labels'][image_rel_path]
+        if len(self.image_names) != 0:
+            # load current image label
+            image_rel_path = self.image_names[self.current_image_index]
+            image_label = self.image_labels['labels'][image_rel_path]
 
-        # Load the image
-        image_full_path = os.path.join(self.default_data_path, image_rel_path)
-        image = wx.Image(image_full_path)
-        image = self.scale_image(image)
-        self.image.SetBitmap(wx.Bitmap(image))
+            # Load the image
+            image_full_path = os.path.join(self.default_data_path, image_rel_path)
+            image = wx.Image(image_full_path)
+            image = self.scale_image(image)
+            self.image.SetBitmap(wx.Bitmap(image))
 
-        # Update the checkboxes
-        for checkbox, label in zip(self.class_checkboxes, image_label):
-            checkbox.SetValue(label)
+            # Update the checkboxes
+            for iclass, checkbox in enumerate(self.class_checkboxes):
+                if iclass < len(image_label):
+                    checkbox.SetValue(image_label[iclass])
+                else:
+                    checkbox.SetValue(False)
 
     def OnOpenImageSet(self, event):
         dlg = wx.DirDialog(self, "Select image dataset folder", self.default_data_path)
@@ -148,7 +169,7 @@ class ImageClassifier(wx.Frame):
             self.load_labels()
             
             # find all images and add them to the dict
-            images_full_path = glob.glob(os.path.join(self.default_data_path, "**/*.png"))
+            images_full_path = glob.glob(os.path.join(self.default_data_path, "**", "*.png"),recursive=True)
             images_rel_path = [os.path.relpath(imfp, self.default_data_path) for imfp in images_full_path]
             for imrp in images_rel_path:
                 if imrp not in self.image_labels['labels']:
@@ -164,18 +185,17 @@ class ImageClassifier(wx.Frame):
         # TODO: Implement image classification
         pass
 
-    
-    def OnKeyDown(self, event):
-        keycode = event.GetKeyCode()
-        print(keycode)
-        if keycode == 27: # Esc key
-            self.Close()
-        elif keycode == 83: # S key
-            self.save_labels()
-            self.current_image_index += 1
-            if self.current_image_index >= len(self.image_labels):
-                self.current_image_index = 0
-            self.LoadImage()
+    def OnNextImage(self, event):
+        self.current_image_index += 1
+        if self.current_image_index >= len(self.image_names):
+            self.current_image_index = 0
+        self.LoadImage()
+
+    def OnPreviousImage(self, event):
+        self.current_image_index -= 1
+        if self.current_image_index < 0:
+            self.current_image_index = len(self.image_names) - 1
+        self.LoadImage()
 
     def OnAddClass(self, event):
         dlg = wx.TextEntryDialog(self, "Enter class name")
