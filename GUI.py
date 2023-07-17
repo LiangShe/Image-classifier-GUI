@@ -27,8 +27,10 @@ class ImageClassifier(wx.Frame):
         self.image_names = []
         self.current_image_index = 0
 
+        self.font = wx.Font(20, wx.SWISS, wx.NORMAL, wx.NORMAL)
+
         self.class_checkboxes = []
-        self.checkbox_size = (180, 50)
+        self.checkbox_size = (200, 50)
 
         self.panel = wx.Panel(self)
         self.panel.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
@@ -39,14 +41,17 @@ class ImageClassifier(wx.Frame):
 
         # Create a button to open an image dataset
         open_button = wx.Button(self.panel, wx.ID_OPEN, label="Open image dataset")
+        open_button.SetFont(self.font)
         open_button.Bind(wx.EVT_BUTTON, self.OnOpenImageSet)
 
         # Create a button to auto classify the image
         classify_button = wx.Button(self.panel, wx.ID_OK, label="Audo classify")
+        classify_button.SetFont(self.font)
         classify_button.Bind(wx.EVT_BUTTON, self.OnClassifyImage)
 
         # Add a button to add a user-defined class
         add_class_button = wx.Button(self.panel, wx.ID_ADD, label="Add Class")
+        add_class_button.SetFont(self.font)
         add_class_button.Bind(wx.EVT_BUTTON, self.OnAddClass)
         
         # Layout the controls
