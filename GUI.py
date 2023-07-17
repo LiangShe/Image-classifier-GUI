@@ -147,7 +147,7 @@ class ImageClassifier(wx.Frame):
             self.load_labels()
             
             # find all images and add them to the dict
-            images_full_path = glob.glob(os.path.join(self.default_data_path, "*.png"))
+            images_full_path = glob.glob(os.path.join(self.default_data_path, "**/*.png"))
             images_rel_path = [os.path.relpath(imfp, self.default_data_path) for imfp in images_full_path]
             for imrp in images_rel_path:
                 if imrp not in self.image_labels['labels']:
