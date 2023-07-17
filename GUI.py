@@ -150,7 +150,7 @@ class ImageClassifier(wx.Frame):
             images_full_path = glob.glob(os.path.join(self.default_data_path, "*.png"))
             images_rel_path = [os.path.relpath(imfp, self.default_data_path) for imfp in images_full_path]
             for imrp in images_rel_path:
-                if imrp not in self.image_labels:
+                if imrp not in self.image_labels['labels']:
                     self.image_labels['labels'][imrp] = []
 
             # use image relative path as unique name
