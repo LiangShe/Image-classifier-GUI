@@ -88,8 +88,9 @@ class ImageClassifier(wx.Frame):
 
 
     def save_labels(self):
-        with open(self.image_label_file_full_path, "w") as f:
-            json.dump(self.image_labels, f)
+        if len(self.image_labels['labels']) != 0:
+            with open(self.image_label_file_full_path, "w") as f:
+                json.dump(self.image_labels, f)
     
     def create_class_checkboxes(self):
         image_classes = self.image_labels["classes"]
