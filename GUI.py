@@ -93,14 +93,15 @@ class ImageClassifier(wx.Frame):
     
     def create_class_checkboxes(self):
         image_classes = self.image_labels["classes"]
-        self.class_checkboxes = [wx.CheckBox(self.panel, label=c, size=self.checkbox_size) for c in image_classes]
-        for ccb in self.class_checkboxes:
-            self.sizer_right.Add(ccb, 0, wx.ALIGN_LEFT)
-        # self.Layout()
+        for image_class in image_classes:
+            self.add_class_checkbox(image_class)
 
     def add_class_checkbox(self,image_class):
-        self.class_checkboxes.append(wx.CheckBox(self.panel, label=image_class, size=self.checkbox_size))
-        self.sizer_right.Add(self.class_checkboxes[-1], 0, wx.ALIGN_LEFT)
+        checkbox = wx.CheckBox(self.panel, label=image_class, size=self.checkbox_size)
+        checkbox.SetFont(self.font)
+        checkbox.Bind(wx.EVT_CHECKBOX, self.OnCheckBox)
+        self.class_checkboxes.append(checkbox)
+        self.sizer_right.Add(checkbox, 0, wx.ALIGN_LEFT)
 
     # TODO: adaptive scale
     def scale_image(self, image):
